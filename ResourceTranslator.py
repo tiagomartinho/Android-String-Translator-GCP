@@ -7,19 +7,16 @@ warnings.filterwarnings("ignore", category=UserWarning)
 CREDENTIAL_FILE = 'project-service-account.json'
 os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = CREDENTIAL_FILE
 
-from google.cloud import translate_v3beta1 as translate
+from google.cloud import translate_v3 as translate
 
 client = translate.TranslationServiceClient()
 
 project_id = json.load(open(CREDENTIAL_FILE))['project_id']
 location = 'global'
 
-parent = client.location_path(project_id, location)
-
-
 def get_all_langs():
     lang = []
-    response = client.get_supported_languages(parent=parent, display_language_code='en')
+    response = client.get_supported_languages(parent='projects/{}'.format(project_id), display_language_code='en')
     for language in response.languages:
         lang.append((language.language_code, language.display_name))
 
@@ -75,7 +72,7 @@ class ResourceTranslator:
 
             for texts in texts_list:
                 translations = client.translate_text(
-                    parent=parent,
+                    parent='projects/{}'.format(project_id),
                     contents=texts,
                     mime_type='text/plain',  # mime types: text/plain, text/html
                     source_language_code='en-US',
